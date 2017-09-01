@@ -24,6 +24,7 @@ namespace Client1
     public class AppSettings
     {
         public const string ActiveMQ_URI = "tcp://RobertWang-PC:61616/";
+
         public const string MY_NAME= "Clinet1";
 
     }
