@@ -18,6 +18,7 @@ using System.Windows.Threading;
 using Apache.NMS;
 using Apache.NMS.ActiveMQ;
 using Newtonsoft.Json;
+using System.ComponentModel;
 
 namespace Client1
 {
@@ -33,15 +34,23 @@ namespace Client1
     /// </summary>
     public partial class MainWindow : Window
     {
+        public ObservableCollection<Chat> ChatList { get; set; }
+        private object _lock = new object();
+
         Publisher publisher;
         Listener consumer;
         public MainWindow()
         {
             InitializeComponent();
             ChatList = new ObservableCollection<Chat>();
+
+            //Chat加上 back color,binding時有跨執行緒的exception,爬很多文都沒用,還是要改用MVVM的架構,先放棄不做
+            //BindingOperations.EnableCollectionSynchronization(ChatList, _lock);
+
             consumer = new Listener(this);
             publisher = new Publisher();
             this.chatContentView.ItemsSource = ChatList;
+
             IntializeActiveMQ();
         }
 
@@ -53,20 +62,35 @@ namespace Client1
 
         public void UpdateCollection(Chat chat)
         {
+            //lock (_lock)
+            //{
+            //    ChatList.Add(chat);
+            //}
+
+            //this.chatContentView.Dispatcher.Invoke(()=> ChatList.Add(chat));
+            //Action action = () => ChatList.Add(chat);
+            //var dispatcher = this.chatContentView.Dispatcher;
+            ////if (dispatcher.CheckAccess())
+            //    action();
+            //else
+            //    dispatcher.Invoke(action);
+
+            //App.Current.MainWindow.Dispatcher.Invoke(new Action(() => ChatList.Add(chat)));
+
             App.Current.Dispatcher.Invoke((Action)delegate // <--- HERE
             {
                 ChatList.Add(chat);
             });
         }
 
-        public ObservableCollection<Chat> ChatList { get; set; }
 
         private void sendBtn_Click(object sender, RoutedEventArgs e)
         {
             string chtContent = contentTextBox.Text;
             if (!string.IsNullOrEmpty(chtContent))
             {
-                Chat chat = new Chat() { Content = chtContent, Date = DateTime.Now.ToShortTimeString(), Name = "Client1",BackColor=Brushes.LightSkyBlue};
+                //Chat chat = new Chat() { Content = chtContent, Date = DateTime.Now.ToShortTimeString(), Name = "Client1", BackColor = Brushes.LightSkyBlue };
+                Chat chat = new Chat() { Content = chtContent, Date = DateTime.Now.ToShortTimeString(), Name = "Client1"};
                 ChatList.Add(chat);
                 string jsonString = JsonConvert.SerializeObject(chat);
                 publisher.SendMessage(jsonString);
@@ -155,10 +179,56 @@ namespace Client1
             }
         }
     }
-
+    public class Chat2 : INotifyPropertyChanged
+    {
+        public event PropertyChangedEventHandler PropertyChanged;
+        private void NotifyPropertyChanged(String propertyName = "")
+        {
+            if (PropertyChanged != null)
+            {
+                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+            }
+        }
+        private Brush _backColor;
+        public Brush BackColor
+        {
+            get
+            { return _backColor; }
+            set
+            { _backColor = value; NotifyPropertyChanged("BackColor"); }
+        }
+        private string _name;
+        public string Name
+        { 
+            get
+            { return _name; }
+            set
+            { _name = value; NotifyPropertyChanged("Name"); }
+        }
+        private string _date;
+        public string Date
+         { 
+            get
+            { return _date; }
+            set
+            {
+                _date = value; NotifyPropertyChanged("Date");
+            }
+        }
+        private string _content;
+        public string Content
+        {
+            get
+            { return _content; }
+            set
+            {
+                _content = value; NotifyPropertyChanged("Content");
+            }
+        }
+    }
     public class Chat
     {
-        public Brush BackColor { get; set; }
+        //public Brush BackColor { get; set; }
 
         public string Name { get; set; }
 

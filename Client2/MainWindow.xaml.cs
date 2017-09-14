@@ -65,7 +65,8 @@ namespace Client2
             string chtContent = contentTextBox.Text;
             if (!string.IsNullOrEmpty(chtContent))
             {
-                Chat chat = new Chat() { Content = chtContent, Date = DateTime.Now.ToShortTimeString(), Name = "Client2", BackColor = Brushes.LightSkyBlue };
+                //Chat chat = new Chat() { Content = chtContent, Date = DateTime.Now.ToShortTimeString(), Name = "Client1", BackColor = Brushes.LightSkyBlue };
+                Chat chat = new Chat() { Content = chtContent, Date = DateTime.Now.ToShortTimeString(), Name = "Client2" };
                 ChatList.Add(chat);
                 string jsonString = JsonConvert.SerializeObject(chat);
                 publisher.SendMessage(jsonString);
@@ -157,6 +158,8 @@ namespace Client2
 
     public class Chat
     {
+        //public Brush BackColor { get; set; }
+
         public string Name { get; set; }
 
         public string Date { get; set; }

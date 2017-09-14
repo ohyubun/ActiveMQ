@@ -10,7 +10,7 @@
         <ListView x:Name="chatContentView">
             <ListView.ItemTemplate>
                 <DataTemplate>
-                    <Grid Background="{Binding BackColor}">
+                    <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition />
                             <RowDefinition />
